@@ -1,6 +1,7 @@
 Upwork Job Monitor & Telegram Alerter
 
 A stealthy, automated job scraping pipeline built for Upwork. This tool monitors specific upwork searches and sends real-time summaries to a Telegram bot.
+
 🚀 Features
 
     Anti-Bot Bypass: Utilizes SeleniumBase in UC (Undetected Chrome) mode to navigate Cloudflare Turnstile protection.
@@ -56,6 +57,7 @@ A stealthy, automated job scraping pipeline built for Upwork. This tool monitors
 
 Run the orchestrator script:
 python main.py
+
 ⚠️ Disclaimer
 
 This project is for educational purposes. Automated scraping may violate Upwork's Terms of Service. Use responsibly.
