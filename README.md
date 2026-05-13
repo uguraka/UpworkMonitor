@@ -1,63 +1,128 @@
-Upwork Job Monitor & Telegram Alerter
+# Upwork Job Monitor & Telegram Alerter
 
-A stealthy, automated job scraping pipeline built for Upwork. This tool monitors specific upwork searches and sends real-time summaries to a Telegram bot.
+A stealthy, automated job scraping pipeline built for Upwork. This tool monitors specific Upwork searches and sends real-time summaries to a Telegram bot.
 
-🚀 Features
+---
 
-    Anti-Bot Bypass: Utilizes SeleniumBase in UC (Undetected Chrome) mode to navigate Cloudflare Turnstile protection.
+## 🚀 Features
 
-    Stealthy Behavior: Implements randomized human-like delays and user-agent spoofing to mimic real browser usage.
+- **Anti-Bot Bypass**  
+  Utilizes `SeleniumBase` in UC (Undetected Chrome) mode to navigate Cloudflare Turnstile protection.
 
-    State Persistence: Maintains a seen_jobs.json database to ensure you are never notified about the same job twice.
+- **Stealthy Behavior**  
+  Implements randomized human-like delays and user-agent spoofing to mimic real browser usage.
 
-    Silent Initialization: On the first run, the script builds a baseline of existing jobs without spamming your phone.
+- **State Persistence**  
+  Maintains a `seen_jobs.json` database to ensure you are never notified about the same job twice.
 
-    Telegram Integration: Delivers clean, HTML-formatted job summaries with direct links to your personal Telegram bot.
+- **Silent Initialization**  
+  On the first run, the script builds a baseline of existing jobs without spamming your phone.
 
-🛠️ Tech Stack
+- **Telegram Integration**  
+  Delivers clean, HTML-formatted job summaries with direct links to your personal Telegram bot.
 
-    Python 3.12+
+---
 
-    SeleniumBase (UC Mode): For browser automation.
+## 🛠️ Tech Stack
 
-    BeautifulSoup4: For fast HTML parsing.
+- **Python 3.12+**
+- **SeleniumBase (UC Mode)** — Browser automation
+- **BeautifulSoup4** — Fast HTML parsing
+- **Requests** — Telegram API interaction
+- **Git** — Version control
 
-    Requests: For Telegram API interaction.
+---
 
-    Git: For version control.
+## 📋 Prerequisites
 
-📋 Prerequisites
+Before running the project, make sure you have:
 
-    Google Chrome: Must be installed on your system.
+- **Google Chrome** installed
+- A **Telegram Bot** created via `@BotFather`
+- Your personal **Telegram Chat ID**
 
-    Telegram Bot: Created via @BotFather.
+---
 
-    Chat ID: Your personal Telegram User ID (6065955283).
+## ⚙️ Installation & Setup
 
-⚙️ Installation & Setup
+### 1. Clone the repository
 
-    Clone the repository:
-    git clone https://github.com/uguraka/UpworkMonitor.git
-    cd UpworkMonitor
+```bash
+git clone https://github.com/uguraka/UpworkMonitor.git
+cd UpworkMonitor
+```
 
-    Create and activate a virtual environment:
-    python -m venv .venv
-    source .venv/bin/activate
+### 2. Create and activate a virtual environment
 
-    Install dependencies:
-    pip install seleniumbase beautifulsoup4 requests
+#### macOS / Linux
 
-    Configure Search Topics:
-    Create search_topics.txt and add your terms (one per line).
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
 
-    Configure Telegram Credentials:
-    Update BOT_TOKEN and CHAT_ID in .env or telegram_bot.py.
+#### Windows (PowerShell)
 
-🖥️ Usage
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
 
-Run the orchestrator script:
+### 3. Install dependencies
+
+```bash
+pip install seleniumbase beautifulsoup4 requests
+```
+
+### 4. Configure environment variables
+
+Create a `.env` file in the project root:
+
+```env
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_CHAT_ID=your_chat_id_here
+```
+
+---
+
+## ▶️ Usage
+
+Run the monitor:
+
+```bash
 python main.py
+```
 
-⚠️ Disclaimer
+The script will:
 
-This project is for educational purposes. Automated scraping may violate Upwork's Terms of Service. Use responsibly.
+1. Launch a stealth browser session
+2. Monitor configured Upwork searches
+3. Detect newly posted jobs
+4. Send Telegram alerts for unseen jobs
+
+---
+
+## 📁 Project Structure
+
+```text
+UpworkMonitor/
+├── main.py
+├── seen_jobs.json
+├── requirements.txt
+├── .env
+└── README.md
+```
+
+---
+
+## 🔒 Notes
+
+- The first run initializes the local job database silently.
+- Chrome must remain installed and up to date.
+- Avoid aggressive polling intervals to reduce detection risk.
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License.
