@@ -1,7 +1,0 @@
-bioinformatics
-computational biology
-primer design
-python developer
-fastapi
-flask
-machine learning

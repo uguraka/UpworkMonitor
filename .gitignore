@@ -34,8 +34,9 @@ geckodriver.log
 ehthumbs.db
 Thumbs.db
 
-.deb
+*.deb
 .env
 .json
+search_topics.txt
 downloaded_files/
 
