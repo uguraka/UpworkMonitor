@@ -68,7 +68,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Chrome will open a visible window (required for UC anti-detection). The script sleeps 8 hours on first startup — set `SKIP_INITIAL_SLEEP=true` to skip this during development.
+Chrome will open a visible window (required for UC anti-detection).
 
 ---
 
@@ -84,7 +84,7 @@ touch seen_jobs.json
 docker-compose up --build
 ```
 
-`seen_jobs.json` and `search_topics.txt` are bind-mounted so state and topics survive container restarts. `SKIP_INITIAL_SLEEP=true` is already set in `docker-compose.yml`.
+`seen_jobs.json` and `search_topics.txt` are bind-mounted so state and topics survive container restarts. 
 
 Logs live inside the container:
 

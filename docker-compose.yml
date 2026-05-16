@@ -3,7 +3,6 @@ services:
     build: .
     env_file: .env
     environment:
-      - SKIP_INITIAL_SLEEP=true
       - DISPLAY=${DISPLAY}
       - TZ=Europe/Istanbul  # Syncs browser JS time to match your IP location
     volumes:
