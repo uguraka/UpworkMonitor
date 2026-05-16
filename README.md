@@ -1,128 +1,131 @@
 # Upwork Job Monitor & Telegram Alerter
 
-A stealthy, automated job scraping pipeline built for Upwork. This tool monitors specific Upwork searches and sends real-time summaries to a Telegram bot.
+Monitors Upwork searches on a schedule and sends new job summaries to a Telegram bot. Uses SeleniumBase in UC (Undetected Chrome) mode to bypass Cloudflare Turnstile.
 
 ---
 
-## 🚀 Features
+## Features
 
-- **Anti-Bot Bypass**  
-  Utilizes `SeleniumBase` in UC (Undetected Chrome) mode to navigate Cloudflare Turnstile protection.
-
-- **Stealthy Behavior**  
-  Implements randomized human-like delays and user-agent spoofing to mimic real browser usage.
-
-- **State Persistence**  
-  Maintains a `seen_jobs.json` database to ensure you are never notified about the same job twice.
-
-- **Silent Initialization**  
-  On the first run, the script builds a baseline of existing jobs without spamming your phone.
-
-- **Telegram Integration**  
-  Delivers clean, HTML-formatted job summaries with direct links to your personal Telegram bot.
+- **Cloudflare bypass** via SeleniumBase UC mode
+- **Deduplication** — `seen_jobs.json` tracks seen job URLs so you're never notified twice
+- **Telegram bot commands** — pause, resume, add topics, and trigger manual searches at runtime
+- **Docker support** — runs headless with Xvfb, state survives container restarts via bind mounts
 
 ---
 
-## 🛠️ Tech Stack
+## Prerequisites
 
-- **Python 3.12+**
-- **SeleniumBase (UC Mode)** — Browser automation
-- **BeautifulSoup4** — Fast HTML parsing
-- **Requests** — Telegram API interaction
-- **Git** — Version control
+- A Telegram bot token from `@BotFather`
+- Your personal Telegram chat ID
 
----
-
-## 📋 Prerequisites
-
-Before running the project, make sure you have:
-
-- **Google Chrome** installed
-- A **Telegram Bot** created via `@BotFather`
-- Your personal **Telegram Chat ID**
+For local runs: Google Chrome installed.  
+For Docker: nothing extra — Chrome is bundled in the image.
 
 ---
 
-## ⚙️ Installation & Setup
+## Setup
 
-### 1. Clone the repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/uguraka/UpworkMonitor.git
 cd UpworkMonitor
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Configure environment
 
-#### macOS / Linux
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+BOT_TOKEN=your_bot_token_here
+CHAT_ID=your_chat_id_here
+```
+
+### 3. Add search topics
+
+Create `search_topics.txt` with one keyword or phrase per line:
+
+```
+python
+machine learning pipeline
+data engineering
+```
+
+Each line becomes a separate Upwork search URL.
+
+---
+
+## Running locally
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-```
-
-#### Windows (PowerShell)
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-
-### 3. Install dependencies
-
-```bash
-pip install seleniumbase beautifulsoup4 requests
-```
-
-### 4. Configure environment variables
-
-Create a `.env` file in the project root:
-
-```env
-TELEGRAM_BOT_TOKEN=your_bot_token_here
-TELEGRAM_CHAT_ID=your_chat_id_here
-```
-
----
-
-## ▶️ Usage
-
-Run the monitor:
-
-```bash
+pip install -r requirements.txt
 python main.py
 ```
 
-The script will:
-
-1. Launch a stealth browser session
-2. Monitor configured Upwork searches
-3. Detect newly posted jobs
-4. Send Telegram alerts for unseen jobs
+Chrome will open a visible window (required for UC anti-detection). The script sleeps 8 hours on first startup — set `SKIP_INITIAL_SLEEP=true` to skip this during development.
 
 ---
 
-## 📁 Project Structure
+## Running with Docker
 
-```text
+The Docker image bundles Chrome and runs it via Xvfb (no display required on the host).
+
+```bash
+# seen_jobs.json must exist as a file before the first run
+# (Docker would create it as a directory otherwise, crashing the app)
+touch seen_jobs.json
+
+docker-compose up --build
+```
+
+`seen_jobs.json` and `search_topics.txt` are bind-mounted so state and topics survive container restarts. `SKIP_INITIAL_SLEEP=true` is already set in `docker-compose.yml`.
+
+Logs live inside the container:
+
+```bash
+docker exec <container_name> cat /app/last_run.txt
+```
+
+---
+
+## Telegram bot commands
+
+Commands are accepted only from the configured `CHAT_ID`.
+
+| Command | Effect |
+|---|---|
+| `/status` | Reports state (running/paused), seen job count, last sweep time |
+| `/pause` | Stops sweeps after the current one finishes |
+| `/resume` | Restarts sweeps |
+| `/search` | Triggers an immediate sweep without waiting for the next interval |
+| `/add <topic>` | Appends a topic to `search_topics.txt`; takes effect next sweep |
+
+---
+
+## Project structure
+
+```
 UpworkMonitor/
-├── main.py
-├── seen_jobs.json
+├── main.py               # Orchestrator — schedule loop, wires modules together
+├── upwork_scraper.py     # SeleniumBase scraper + deduplication
+├── telegram_bot.py       # Outbound notifications + inbound command polling
+├── search_topics.txt     # One search keyword/phrase per line
 ├── requirements.txt
-├── .env
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── .env.example
 └── README.md
 ```
 
 ---
 
-## 🔒 Notes
+## License
 
-- The first run initializes the local job database silently.
-- Chrome must remain installed and up to date.
-- Avoid aggressive polling intervals to reduce detection risk.
-
----
-
-## 📜 License
-
-This project is licensed under the MIT License.
+MIT
