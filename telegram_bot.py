@@ -58,8 +58,9 @@ def _send_reply(text):
 # --- Two-way bot controller ---
 
 class BotController:
-    def __init__(self, pause_event: threading.Event, topics_file: str = "search_topics.txt"):
+    def __init__(self, pause_event: threading.Event, force_search_event: threading.Event = None, topics_file: str = "search_topics.txt"):
         self._pause_event = pause_event
+        self._force_search_event = force_search_event
         self._topics_file = topics_file
         self._thread = threading.Thread(target=self._poll_loop, daemon=True)
 
@@ -146,8 +147,19 @@ class BotController:
                 f"Last sweep: {last_run}"
             )
 
+        elif command == "/search":
+            if self._force_search_event is None:
+                _send_reply("⚠️ Manual search not available.")
+                return
+            if self._force_search_event.is_set():
+                _send_reply("🔍 A manual search is already queued — hang tight.")
+                return
+            self._force_search_event.set()
+            _send_reply("🔍 Manual search triggered. Results coming soon...")
+            print("🔍 Manual search triggered via Telegram.")
+
         else:
-            _send_reply("Unknown command. Available: /pause, /resume, /add &lt;topic&gt;, /status")
+            _send_reply("Unknown command. Available: /pause, /resume, /add &lt;topic&gt;, /status, /search")
 
 
 # --- Quick connectivity test ---

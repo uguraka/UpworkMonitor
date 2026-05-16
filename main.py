@@ -9,7 +9,8 @@ from telegram_bot import send_telegram_summary, BotController
 
 def main():
     pause_event = threading.Event()
-    bot = BotController(pause_event, topics_file="search_topics.txt")
+    force_search_event = threading.Event()
+    bot = BotController(pause_event, force_search_event, topics_file="search_topics.txt")
     bot.start()
 
     while True:
@@ -41,7 +42,10 @@ def main():
 
         delay_seconds = random.uniform(600 * 3, 1200 * 3)
         print(f"\n🛑 Cycle complete. Master sleep for {delay_seconds / 60:.1f} minutes...")
-        time.sleep(delay_seconds)
+        force_search_event.wait(timeout=delay_seconds)
+        if force_search_event.is_set():
+            force_search_event.clear()
+            print("⚡ Waking early for manual /search command.")
 
 
 if __name__ == "__main__":
