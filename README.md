@@ -104,6 +104,7 @@ Commands are accepted only from the configured `CHAT_ID`.
 | `/pause` | Stops sweeps after the current one finishes |
 | `/resume` | Restarts sweeps |
 | `/search` | Triggers an immediate sweep without waiting for the next interval |
+| `/topics` | Lists all current search topics |
 | `/add <topic>` | Appends a topic to `search_topics.txt`; takes effect next sweep |
 
 ---

@@ -113,9 +113,24 @@ class BotController:
             print("⏸ Paused via Telegram command.")
 
         elif command == "/resume":
+            if not self._pause_event.is_set():
+                _send_reply("▶️ Monitor is already running.")
+                return
             self._pause_event.clear()
             _send_reply("▶️ Monitor <b>resumed</b>. Next sweep will start shortly.")
             print("▶️ Resumed via Telegram command.")
+
+        elif command == "/topics":
+            try:
+                with open(self._topics_file, "r", encoding="utf-8") as f:
+                    topics = [l.strip() for l in f if l.strip()]
+                if topics:
+                    numbered = "\n".join(f"{i}. {t}" for i, t in enumerate(topics, 1))
+                    _send_reply(f"📋 <b>Search topics ({len(topics)})</b>\n\n{numbered}")
+                else:
+                    _send_reply("📋 No search topics configured.")
+            except OSError:
+                _send_reply("⚠️ Could not read search topics file.")
 
         elif command == "/add":
             if not arg:
@@ -163,7 +178,7 @@ class BotController:
             print("🔍 Manual search triggered via Telegram.")
 
         else:
-            _send_reply("Unknown command. Available: /pause, /resume, /add &lt;topic&gt;, /status, /search")
+            _send_reply("Unknown command. Available: /pause, /resume, /search, /status, /topics, /add &lt;topic&gt;")
 
 
 # --- Quick connectivity test ---
