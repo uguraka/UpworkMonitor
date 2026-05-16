@@ -16,6 +16,10 @@ LAST_RUN_FILE = "last_run.txt"
 
 # --- Outbound notifications ---
 
+def send_no_jobs_message():
+    _send_reply("🔍 Sweep complete — no new jobs found.")
+
+
 def send_telegram_summary(jobs_list):
     """Compiles all jobs into a single summary message."""
     if not jobs_list:

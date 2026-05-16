@@ -4,7 +4,7 @@ import random
 import threading
 from datetime import datetime
 from upwork_scraper import run_upwork_monitor, create_search_queries, log_error
-from telegram_bot import send_telegram_summary, BotController
+from telegram_bot import send_telegram_summary, send_no_jobs_message, BotController
 
 
 def main():
@@ -33,6 +33,8 @@ def main():
 
             if new_jobs:
                 send_telegram_summary(new_jobs)
+            else:
+                send_no_jobs_message()
 
         except BaseException as e:
             if isinstance(e, KeyboardInterrupt):
