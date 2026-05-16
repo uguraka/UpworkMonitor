@@ -1,5 +1,6 @@
 from seleniumbase import SB
 from bs4 import BeautifulSoup
+from datetime import datetime
 import time
 import json
 import os
@@ -8,6 +9,17 @@ import random
 # --- Configuration ---
 SEEN_JOBS_FILE = "seen_jobs.json"
 NEW_JOBS_QUEUE_FILE = "new_jobs_queue.json"
+ERROR_LOG_FILE = "scraper_errors.log"
+
+
+def log_error(category, url, detail=""):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    line = f"{timestamp} | [{category}] | {url}"
+    if detail:
+        line += f" | {detail}"
+    with open(ERROR_LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(line + "\n")
+    print(f"   ⚠ Logged to {ERROR_LOG_FILE}: {line}")
 
 
 # --- State Management Functions ---
@@ -97,35 +109,49 @@ def run_upwork_monitor(urls):
 
     with SB(uc=True, test=True, headless=False) as sb:
         for url in urls:
-            print(f"\n--- Checking Search: {url.split('q=')[-1].split('&')[0]} ---")
+            topic = url.split('q=')[-1].split('&')[0]
+            print(f"\n--- Checking Search: {topic} ---")
 
-            sb.uc_open_with_reconnect(url, reconnect_time=5)
-            sb.uc_gui_click_captcha()
+            for attempt in range(2):
+                try:
+                    sb.uc_open_with_reconnect(url, reconnect_time=5)
+                    sb.uc_gui_click_captcha()
+                    sb.wait_for_element('article', timeout=15)
+                    html = sb.get_page_source()
+                    latest_jobs = extract_job_data(html)
 
-            try:
-                sb.wait_for_element('article', timeout=15)
-                html = sb.get_page_source()
-                latest_jobs = extract_job_data(html)
+                    for job in latest_jobs:
+                        if job['link'] == "N/A":
+                            continue
+                        if job['link'] not in seen_urls:
+                            print(f"[🌟 NEW] {job['title']}")
+                            new_jobs_found_this_run.append(job)
+                            seen_urls.add(job['link'])
+                        else:
+                            print(f"[Skipping] {job['title']} (Already seen)")
 
-                # 2. Diffing logic
-                for job in latest_jobs:
-                    # Ignore corrupted links
-                    if job['link'] == "N/A":
-                        continue
+                    break
 
-                    if job['link'] not in seen_urls:
-                        # It's a new job!
-                        print(f"[🌟 NEW] {job['title']}")
-                        new_jobs_found_this_run.append(job)
-                        seen_urls.add(job['link'])
+                except BaseException as e:
+                    if isinstance(e, KeyboardInterrupt):
+                        raise
+                    err_str = str(e).lower()
+                    if "captcha" in err_str or "cloudflare" in err_str:
+                        category = "CAPTCHA FAIL"
+                    elif "timeout" in err_str or "timed out" in err_str:
+                        category = "TIMEOUT"
                     else:
-                        # We already processed this one in a previous run
-                        print(f"[Skipping] {job['title']} (Already seen)")
+                        category = "ERROR"
 
-            except Exception as e:
-                print(f"Could not load jobs for this link. Error: {e}")
+                    if attempt == 0:
+                        retry_sleep = random.uniform(15, 30)
+                        print(f"   [{category}] Attempt 1 failed: {e}. Retrying in {retry_sleep:.0f}s...")
+                        time.sleep(retry_sleep)
+                    else:
+                        print(f"   [{category}] Attempt 2 failed: {e}. Skipping URL.")
+                        log_error(category, url, str(e)[:200])
 
-            time.sleep(random.uniform(5,10))
+            time.sleep(random.uniform(5, 10))
 
     # 3. Save state and RETURN the new jobs
     if new_jobs_found_this_run:
@@ -136,12 +162,13 @@ def run_upwork_monitor(urls):
         print("\n💤 No new jobs found this run.")
         return []  # <--- Return an empty list
 
-def create_search_queries(search_topics_file:'str'="search_topics.txt"):
-    "https://www.upwork.com/nx/search/jobs/?nbs=1&q=bioinformatics&sort=recency"
+def create_search_queries(search_topics_file: str = "search_topics.txt"):
     search_queries = []
     with open(search_topics_file, 'r', encoding='utf-8') as f:
         for line in f:
             search_topic = line.strip()
+            if not search_topic:
+                continue
             search_query = f"https://www.upwork.com/nx/search/jobs/?nbs=1&q={search_topic}&sort=recency"
             search_queries.append(search_query)
     return search_queries
