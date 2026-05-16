@@ -36,7 +36,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source files
-COPY main.py upwork_scraper.py telegram_bot.py search_topics.txt ./
+COPY main.py upwork_scraper.py telegram_bot.py entrypoint.sh ./
+RUN chmod +x entrypoint.sh
 
-# Use host display if available, otherwise start Xvfb at 1080p
-ENTRYPOINT ["bash", "-c", "if [ -z \"$DISPLAY\" ]; then Xvfb :99 -screen 0 1920x1080x24 -ac & export DISPLAY=:99; fi && exec python main.py"]
+ENTRYPOINT ["./entrypoint.sh"]
