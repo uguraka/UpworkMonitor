@@ -4,7 +4,7 @@ import random
 import threading
 from datetime import datetime
 from upwork_scraper import run_upwork_monitor, create_search_queries, log_error
-from telegram_bot import send_telegram_summary, send_no_jobs_message, BotController
+from telegram_bot import send_telegram_summary, send_no_jobs_message, _send_reply, BotController
 
 
 def main():
@@ -29,13 +29,19 @@ def main():
 
             # Reload topics each cycle so /add takes effect without a restart
             urls = create_search_queries("search_topics.txt")
-            new_jobs = run_upwork_monitor(urls)
-
-            if new_jobs:
-                send_telegram_summary(new_jobs)
+            if not urls:
+                print("⚠️ search_topics.txt is empty — skipping sweep.")
+                _send_reply("⚠️ <b>search_topics.txt is empty.</b> Add a topic with /add &lt;topic&gt;.")
             else:
-                send_no_jobs_message()
+                new_jobs = run_upwork_monitor(urls)
+                if new_jobs:
+                    send_telegram_summary(new_jobs)
+                else:
+                    send_no_jobs_message()
 
+        except FileNotFoundError as e:
+            print(f"\n⚠️ {e}")
+            _send_reply(f"⚠️ <b>File not found:</b> {e}")
         except BaseException as e:
             if isinstance(e, KeyboardInterrupt):
                 raise

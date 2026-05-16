@@ -163,6 +163,10 @@ def run_upwork_monitor(urls):
         return []  # <--- Return an empty list
 
 def create_search_queries(search_topics_file: str = "search_topics.txt"):
+    if not os.path.exists(search_topics_file):
+        raise FileNotFoundError(
+            f"{search_topics_file} not found. Create it with one search topic per line."
+        )
     search_queries = []
     with open(search_topics_file, 'r', encoding='utf-8') as f:
         for line in f:
