@@ -1,0 +1,8 @@
+.venv/
+.env
+*.json
+*.log
+__pycache__/
+.git/
+.idea/
+downloaded_files/

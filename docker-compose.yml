@@ -1,0 +1,13 @@
+services:
+  upwork-monitor:
+    build: .
+    env_file: .env
+    environment:
+      - SKIP_INITIAL_SLEEP=true
+      - DISPLAY=${DISPLAY}
+      - TZ=Europe/Istanbul  # Syncs browser JS time to match your IP location
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./seen_jobs.json:/app/seen_jobs.json
+      - ./search_topics.txt:/app/search_topics.txt
+    restart: unless-stopped
